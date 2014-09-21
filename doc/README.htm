@@ -1,0 +1,215 @@
+<h2>Tuxgraphics Digital DC Power Supply Unit</h2>
+Software for the version 3 hardware.
+<pre>
+
+Compiling the software and programming 
+the microcontroller (atmega8 or atmega8a):
+==========================================
+
+1) edit and adapt the file hardware_settings.h 
+   (calibration and selection of the right hardware type).
+   You can as well just copy one of the pre-set versions
+   on top of hardware_settings.h. 
+   Example: cp hardware_settings.h-22V hardware_settings.h
+
+2) load and compile:
+make 
+make load
+
+3) set the fuse bytes to 8MHz internal with BOD:
+make fuse
+
+This should result in the following settings:
+
+  Device signature = 0x1e9307
+   lfuse reads as A4
+   hfuse reads as D9
+
+Fuse Low Byte details
+
+BODLEVEL  Brown out detector trigger level = 1
+BODEN     Brown out detector, 0=enable     = 0
+SUT1      Select start-up time             = 1
+SUT0      Select start-up time             = 0
+CKSEL3    Select Clock source              = 0
+CKSEL2    Select Clock source              = 1
+CKSEL1    Select Clock source              = 0
+CKSEL0    Select Clock source              = 0
+
+The "make fuse" needs to be done only once
+unless you change the Atmega8/Atmega8a chip. make/make load
+need to be repeated everytime you change something
+in the software (e.g update of hardware_settings.h). 
+
+The poweresupply must be powered up during programming
+but nothing should be connected on the output. Make
+sure that you do not accidently press any button
+during the programming (while loading the software into the uC).
+
+Compile under windows
+=====================
+Please use the provided Makefile.
+
+There are as well 3 batch files which you can use
+to run the makefile. To use them edit them and change
+the path as per your avr-gcc installation on your PC.
+After that run them by double-clicking on them in the 
+file manager.
+
+ winmake.bat  -- comile, this is mandatory to use
+
+ winclean.bat -- delete all files generated during compilation
+
+ winload.bat  -- load software using avrdude, may also use
+                 some other means of loading the softare. In that
+                 case you do not need to use this batch file.
+
+ winsetfuse.bat -- set fuse bytes using avrdude. You may as well use
+                   some other means of changing the fuse bytes. In that
+                   case you do not need to use this batch file.
+
+Calibration
+===========
+To calibrate the display edit the file hardware_settings.h
+Here you can change also the settings between the 30V and the 22V version.
+
+In general you should only need to change 
+U_DIVIDER and I_RESISTOR by very small amounts. 
+
+
+Overview
+========
+This is the software for the tuxgraphics.org electronic digital DC power supply. 
+A microncontroller controlled bench DC power supply unit. 
+
+All of the control logic is implemented in software. This
+saves a lot of parts compared to conventional lab-power 
+supplies and means it is cheaper, easier to build and
+offers more functionallity.
+
+Note however that this means also that the short circuit
+protection is implemented in software. Be careful when
+you change something in the software. If the microcontroller 
+is not running properly due to a software fault then there
+might not be any short circuit protection.
+
+The software is prepared for 2 versions:
+- 0-22V 0-2.5A
+- 0-30V 0-2A
+
+If you want to build a version that has a smaller output
+range than any of the two version then you can just
+modify the file hardware_settings.h.
+
+Remote control from your PC
+===========================
+The unit can be controlled remotely from a computer using
+a USB serial interface. An add-on card is available from
+http://shop.tuxgraphics.org which offers galvanic separation
+such that you can use this power supply relative to
+any reference point (e.g build two power supplies and use
+one as negative and one as positive power supply).
+
+Terminal settings for remote control via your computer
+======================================================
+You can e.g use putty under windows
+http://www.chiark.greenend.org.uk/~sgtatham/putty/ 
+Putty supports as serial connections. The other common
+option under windows is HyperTerminal but it is more complicated
+to use than putty.
+For Linux I can recommend picocom
+http://code.google.com/p/picocom/
+(use command picocom -l -b 9600 /dev/ttyUSB0)
+Another good serial terminal for linux is gtkterm
+http://www.jls-info.com/julien/linux/
+
+Serial port settings for the terminal:
+
+port       : Virtual com port (e.g /dev/ttyUSB1 or /dev/ttyUSB0
+             or COM5 under windows or ... whatever port the
+             virtual com-port maps to)
+             Under linux or Mac you can use the command dmesg
+             after you have plugged in the USB cable to see to 
+             which com-port/device the new virtual com port maps to.
+             Under windows you look at Control Panel-&gt;Hardware-&gt;Devices
+             and click on FT232R USB UART-&gt;Hardware to see the COM
+             port.
+             
+baudrate   : 9600
+parity     : none
+flowcontrol: none
+stopbits   : 1
+databits   : 8
+
+</pre>
+<br>
+<img src=screenshot-cmd-interface.gif>
+<br>
+<br>
+<pre>
+Controling the power supply with scriptable commands
+====================================================
+You can control the digital power supply by commands. A number 
+of commands are provided for this purpose. They are at the moment
+available for Linux, Mac and Windows:
+
+
+ddcp-script-ttyinit   - initialize the COM port (run this once at
+                        at the beginning)
+ddcp-script-getval    - get current values (same as you see on the LCD)
+ddcp-script-setval    - send a command to the power supply
+
+ddcp-script-example.sh  - an example unix shell script showing how to use 
+                          the above commands
+
+To compile the ddcp-script commands under linux and on the mac
+use the command:
+
+make ddcp-script
+
+The windows versions of those commands are available in the
+sub-directory "ddcp-script-windows". The windows versions
+are compiled in that sub-directory with the command:
+
+make
+
+Pre-compiled binaries are available for winXP.
+
+-------------------------------------------------------------------
+Software License:
+Copyright: GPL V2 (see http://www.gnu.org/licenses/old-licenses/gpl-2.0.html )
+Author: Guido Socher (guidosocher@gmail.com)
+Homepage: http://www.tuxgraphics.org/electronics/
+-------------------------------------------------------------------
+Change history:
+digitaldcpower-0.6.0 -- 2010-05-22 first version of the new power V3.
+                         This version is made for a new type of hardware
+                         and will not run on any previous hardware version.
+
+digitaldcpower-0.6.1 -- 2010-06-06 Number conversion to display string
+                         improved.
+                         Basic uart interface prompt, no remote control yet
+
+digitaldcpower-0.6.2 -- 2010-06-26 Full UART command interface
+
+digitaldcpower-0.6.3 -- 2010-07-03 Accelerate UART command polling to
+                         not loose characters when copied/pasted at high speed.
+                         Line editing with backspace if terminal supports it.
+                         Set BOD (brown out detector enable) fuse.
+                         Script interface (ddcp-script)
+digitaldcpower-0.6.4 -- 2010-07-11 added ddcp-script interface 
+                         commands for windows.
+digitaldcpower-0.6.5 -- 2012-04-14 There was a fault in the range setting
+                         for the PWM (ICR1L in dac.c). Thanks to Weitao Li (james)
+                         for reporting this. This fault reduced the precision
+                         a bit.
+                     -- 2012-04-14 some minor improvemnents in main.c and analog.c to 
+                        regulate the voltage drop over the current measuremtns shunts 
+                        faster.
+
+digitaldcpower-0.6.6 -- 2012-07-17 Adapt the code to compile clean with the latest
+                        avr-libc (http://www.nongnu.org/avr-libc/changes-1.8.html)
+                        prog_char is now depricated.
+-------------------------------------------------------------------
+ vim: set sw=8 ts=8 si et :
+</pre>
